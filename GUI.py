@@ -28,6 +28,11 @@ class ModManagerApp:
         self.select_mods_button.grid(row=0, column=1, padx=5)
         self.select_mods_button.grid_remove()
 
+        self.reset_apworld_button = tk.Button(self.button_frame, text="Reset APworld", command=self.reset_modded_data)
+        # Initially hide the reset apworld button
+        self.reset_apworld_button.grid(row=0, column=2, padx=5)
+        self.reset_apworld_button.grid_remove()
+
         self.scrollable_frame = ttk.Frame(root)
         self.canvas = tk.Canvas(self.scrollable_frame)
         self.scrollbar = ttk.Scrollbar(self.scrollable_frame, orient="vertical", command=self.canvas.yview)
@@ -65,6 +70,8 @@ class ModManagerApp:
         if self.apworld_file:
             # Show the select mods button after an APWorld file is selected
             self.select_mods_button.grid()
+            # Show the reset apworld button after an APWorld file is selected
+            self.reset_apworld_button.grid()
 
     def list_folders(self):
         for widget in self.checkbox_frame.winfo_children():
@@ -134,6 +141,45 @@ class ModManagerApp:
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to replace moddedData.json: {e}")
+
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def reset_modded_data(self):
+        temp_dir = os.path.join(os.getcwd(), "temp_apworld")
+        os.makedirs(temp_dir, exist_ok=True)
+
+        try:
+            with zipfile.ZipFile(self.apworld_file, 'r') as zip_ref:
+                zip_ref.extractall(temp_dir)
+
+            # Find the existing moddedData.json within the extracted contents
+            modded_data_path = None
+            for root, dirs, files in os.walk(temp_dir):
+                if "moddedData.json" in files:
+                    modded_data_path = os.path.join(root, "moddedData.json")
+                    break
+
+            if modded_data_path:
+                # Replace the existing moddedData.json with an empty file
+                open(modded_data_path, 'w').close()
+
+                # Create a new .apworld file with the modified contents
+                new_apworld_file = self.apworld_file + "_new.apworld"
+                with zipfile.ZipFile(new_apworld_file, 'w') as zip_ref:
+                    for root, dirs, files in os.walk(temp_dir):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            arcname = os.path.relpath(file_path, start=temp_dir)
+                            zip_ref.write(file_path, arcname)
+
+                os.replace(new_apworld_file, self.apworld_file)
+                messagebox.showinfo("Success", "moddedData.json has been reset successfully.")
+            else:
+                raise FileNotFoundError("moddedData.json not found in the APWorld file.")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to reset moddedData.json: {e}")
 
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
