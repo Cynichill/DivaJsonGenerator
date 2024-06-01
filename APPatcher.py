@@ -9,6 +9,7 @@ from TextFilter import filter_important_lines
 
 class ModManagerApp:
     def __init__(self, root):
+
         self.root = root
         self.root.title("Diva APWorld Patcher")
 

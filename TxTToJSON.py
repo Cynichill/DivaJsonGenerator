@@ -1,6 +1,61 @@
 import json
 import re
 from tkinter import messagebox
+from unidecode import unidecode
+
+def unicode_to_plain_text(text):
+    mapping = {
+        '＋': 'plus',
+        '♂': 'male_sign',
+        '♀': 'female_sign',
+        '♠': 'spade',
+        '♣': 'club',
+        '♥': 'heart',
+        '♦': 'diamond',
+        '♪': 'musical_note',
+        '♫': 'musical_notes',
+        '☀': 'sun',
+        '☁': 'cloud',
+        '☂': 'umbrella',
+        '☃': 'snowman',
+        '☄': 'comet',
+        '★': 'star',
+        '☆': 'star',
+        '☎': 'telephone',
+        '☏': 'telephone',
+        '☑': 'check_box',
+        '☒': 'check_box',
+        '☞': 'pointing_right',
+        '☜': 'pointing_left',
+        '☝': 'pointing_up',
+        '☟': 'pointing_down',
+        # Add more mappings for special characters here
+    }
+
+    special_characters = set(mapping.keys())
+
+    plain_text = []
+    word_buffer = ''
+
+    for char in text:
+        if char in special_characters:
+            if word_buffer:
+                plain_text.append(unidecode(word_buffer))
+                word_buffer = ''
+            plain_text.append(mapping[char])
+        elif char.isalnum():
+            word_buffer += char
+        elif char.isspace():
+            if word_buffer:
+                plain_text.append(unidecode(word_buffer))
+                word_buffer = ''
+            plain_text.append(' ')
+
+    # Add the last buffered word
+    if word_buffer:
+        plain_text.append(unidecode(word_buffer))
+
+    return ''.join(plain_text)
 
 def replace_non_ascii_with_space(text):
     return ''.join(char if ord(char) < 128 else ' ' for char in text)
@@ -54,7 +109,8 @@ def extract_song_info(data):
             parts = line.split('=')
             if len(parts) == 2:
                 song_name = parts[1].strip()
-                cleaned_song_name = replace_non_ascii_with_space(song_name)
+                cleaned_song_name = unicode_to_plain_text(song_name) #Try to convert unicode to plain text
+                cleaned_song_name = replace_non_ascii_with_space(cleaned_song_name) #After conversion, replace any remainders with blanks
                 current_song['songName'] = cleaned_song_name
                 curName = cleaned_song_name
 
