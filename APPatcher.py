@@ -8,40 +8,46 @@ from TextFilter import filter_important_lines
 
 
 class ModManagerApp:
-    def __init__(self, root):
-
-        self.root = root
-        self.root.title("Diva APWorld Patcher")
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Diva APWorld Patcher")
 
         self.mods_folder = ""
         self.apworld_file = ""
         self.folders = []
 
-        # Frame for the buttons
-        self.button_frame = tk.Frame(root)
+        self.button_frame = tk.Frame(self.master)
         self.button_frame.pack(pady=10)
 
-        self.select_apworld_button = tk.Button(self.button_frame, text="Select APWorld", command=self.select_apworld)
-        self.select_apworld_button.grid(row=0, column=0, padx=5)
+        self.create_button("Select APWorld", self.select_apworld, 0, 0)
+        self.select_mods_button = self.create_button("Select Mods Folder", self.select_folder, 0, 1, hide=True)
+        self.reset_apworld_button = self.create_button("Reset APworld", self.reset_modded_data, 0, 2, hide=True)
 
-        self.select_mods_button = tk.Button(self.button_frame, text="Select Mods Folder", command=self.select_folder)
-        # Initially hide the select mods button
-        self.select_mods_button.grid(row=0, column=1, padx=5)
-        self.select_mods_button.grid_remove()
+        self.scrollable_frame = None
+        self.canvas = None
+        self.scrollbar = None
 
-        self.reset_apworld_button = tk.Button(self.button_frame, text="Reset APworld", command=self.reset_modded_data)
-        # Initially hide the reset apworld button
-        self.reset_apworld_button.grid(row=0, column=2, padx=5)
-        self.reset_apworld_button.grid_remove()
+        self.checkbox_frame = None
 
-        self.scrollable_frame = ttk.Frame(root)
+        self.setup_scrollable_frame()
+
+        self.process_button = tk.Button(self.master, text="Process Mods", command=self.process_mods)
+        self.process_button.pack_forget()
+
+    def create_button(self, text, command, row, column, hide=False):
+        button = tk.Button(self.button_frame, text=text, command=command)
+        button.grid(row=row, column=column, padx=5)
+        if hide:
+            button.grid_remove()
+        return button
+
+    def setup_scrollable_frame(self):
+        self.scrollable_frame = ttk.Frame(self.master)
         self.canvas = tk.Canvas(self.scrollable_frame)
         self.scrollbar = ttk.Scrollbar(self.scrollable_frame, orient="vertical", command=self.canvas.yview)
+
         self.checkbox_frame = ttk.Frame(self.canvas)
-        self.checkbox_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        )
+        self.checkbox_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
 
         self.canvas.create_window((0, 0), window=self.checkbox_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
@@ -49,12 +55,7 @@ class ModManagerApp:
         self.scrollable_frame.pack(fill="both", expand=True)
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
-
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-
-        self.process_button = tk.Button(root, text="Process Mods", command=self.process_mods)
-        # Initially hide the process button
-        self.process_button.pack_forget()
 
     def _on_mousewheel(self, event):
         self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
@@ -93,10 +94,10 @@ class ModManagerApp:
                 if var.get():
                     folder_name = os.path.basename(folder_path)
                     output_file.write(f"song_pack={folder_name}\n")
-                    for root, dirs, files in os.walk(folder_path):
+                    for master, dirs, files in os.walk(folder_path):
                         for file in files:
                             if file == "mod_pv_db.txt":
-                                file_path = os.path.join(root, file)
+                                file_path = os.path.join(master, file)
                                 try:
                                     with open(file_path, "r", encoding='utf-8', errors='ignore') as input_file:
                                         output_file.write(input_file.read() + "\n")
@@ -122,18 +123,18 @@ class ModManagerApp:
                 return
 
             # Find the existing moddedData.json within the extracted contents
-            for root, dirs, files in os.walk(temp_dir):
+            for master, dirs, files in os.walk(temp_dir):
                 for file in files:
                     if file == "moddedData.json":
-                        apworld_modded_data_path = os.path.join(root, file)
+                        apworld_modded_data_path = os.path.join(master, file)
                         shutil.copy(modded_data_path, apworld_modded_data_path)
                         break
 
             new_apworld_file = self.apworld_file + "_new.apworld"
             with zipfile.ZipFile(new_apworld_file, 'w') as zip_ref:
-                for root, dirs, files in os.walk(temp_dir):
+                for master, dirs, files in os.walk(temp_dir):
                     for file in files:
-                        file_path = os.path.join(root, file)
+                        file_path = os.path.join(master, file)
                         arcname = os.path.relpath(file_path, start=temp_dir)
                         zip_ref.write(file_path, arcname)
 
@@ -156,9 +157,9 @@ class ModManagerApp:
 
             # Find the existing moddedData.json within the extracted contents
             modded_data_path = None
-            for root, dirs, files in os.walk(temp_dir):
+            for master, dirs, files in os.walk(temp_dir):
                 if "moddedData.json" in files:
-                    modded_data_path = os.path.join(root, "moddedData.json")
+                    modded_data_path = os.path.join(master, "moddedData.json")
                     break
 
             if modded_data_path:
@@ -168,9 +169,9 @@ class ModManagerApp:
                 # Create a new .apworld file with the modified contents
                 new_apworld_file = self.apworld_file + "_new.apworld"
                 with zipfile.ZipFile(new_apworld_file, 'w') as zip_ref:
-                    for root, dirs, files in os.walk(temp_dir):
+                    for master, dirs, files in os.walk(temp_dir):
                         for file in files:
-                            file_path = os.path.join(root, file)
+                            file_path = os.path.join(master, file)
                             arcname = os.path.relpath(file_path, start=temp_dir)
                             zip_ref.write(file_path, arcname)
 
@@ -187,6 +188,6 @@ class ModManagerApp:
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = ModManagerApp(root)
-    root.mainloop()
+    master = tk.Tk()
+    app = ModManagerApp(master)
+    master.mainloop()
