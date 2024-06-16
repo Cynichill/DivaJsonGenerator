@@ -1,7 +1,7 @@
 import re
 from TxTToJSON import process_song_file
 
-def filter_important_lines(input_file, output_file):
+def filter_important_lines(input_file, output_file, jsonName):
     song_pack_lines = {}
     current_song_pack = None
     pv_info = {}
@@ -62,4 +62,4 @@ def filter_important_lines(input_file, output_file):
     with open(output_file, 'w', encoding='utf-8') as file:
         file.writelines(sorted_lines)
 
-    process_song_file(output_file, "moddedData.json")
+    process_song_file(output_file, jsonName + ".json")
