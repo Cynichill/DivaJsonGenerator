@@ -5,14 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="adc0007c-9147-4790-a6c5-c5ee7566df9d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/DivaJson.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/APPatcher.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/TextFilter.py" beforeDir="false" afterPath="$PROJECT_DIR$/TextFilter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/combined_mod_pv_db.txt" beforeDir="false" afterPath="$PROJECT_DIR$/combined_mod_pv_db.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filtered_file.txt" beforeDir="false" afterPath="$PROJECT_DIR$/filtered_file.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/moddedData.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,19 +32,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.APPatcher.executor": "Run",
-    "Python.DivaJson.executor": "Run",
-    "Python.TextFilter.executor": "Run",
-    "Python.TxTToJSON.executor": "Run",
-    "Python.test.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/logan/Desktop/APMainTesting/Archipelago-main/Archipelago-main"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.APPatcher.executor&quot;: &quot;Run&quot;,
+    &quot;Python.DivaJson.executor&quot;: &quot;Run&quot;,
+    &quot;Python.TextFilter.executor&quot;: &quot;Run&quot;,
+    &quot;Python.TxTToJSON.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/logan/Desktop/APMainTesting/Archipelago-main/Archipelago-main&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

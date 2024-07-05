@@ -5,6 +5,7 @@ def filter_important_lines(input_file, output_file, jsonName):
     song_pack_lines = {}
     current_song_pack = None
     pv_info = {}
+    prev_name = None
 
     # First pass: Collect length information
     with open(input_file, 'r', encoding='utf-8') as file:
@@ -29,7 +30,9 @@ def filter_important_lines(input_file, output_file, jsonName):
 
             match = re.match(r'^(pv_\d+)', line)
             if match and '.song_name_en=' in line:
-                if current_song_pack:
+                cur_name = line
+                if current_song_pack and prev_name != cur_name:
+                    prev_name = cur_name
                     song_pack_lines[current_song_pack].append(line)
             elif match and '.level=' in line:
                 pv_id_match = re.match(r'^(pv_\d+)\.difficulty\.(\w+)\.(\d+)\.level=', line)
