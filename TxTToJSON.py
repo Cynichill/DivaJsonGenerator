@@ -74,7 +74,7 @@ def extract_song_info(data):
 
     for line in lines:
         if 'song_pack=' in line:
-            parts = line.split('=')
+            parts = line.split('=', 1)
             if len(parts) == 2:
                 current_pack = parts[1].strip()
                 if current_pack not in song_packs:
@@ -100,7 +100,7 @@ def extract_song_info(data):
                 conflicts.append(pv_id)
 
         if 'song_name_en=' in line:
-            parts = line.split('=')
+            parts = line.split('=', 1)
             if len(parts) == 2:
                 song_name = parts[1].strip()
                 cleaned_song_name = clean_text(song_name)
