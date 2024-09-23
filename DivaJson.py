@@ -72,16 +72,27 @@ class ModManagerApp:
             self.process_button.pack(pady=10)
 
     def list_folders(self):
+        # Clear the checkbox frame first
         for widget in self.checkbox_frame.winfo_children():
             widget.destroy()
+
         self.folders = []
+
+        # Loop through each folder in mods_folder
         for folder_name in os.listdir(self.mods_folder):
             folder_path = os.path.join(self.mods_folder, folder_name)
+
+            # Check if it's a directory
             if os.path.isdir(folder_path):
-                var = tk.BooleanVar()
-                chk = tk.Checkbutton(self.checkbox_frame, text=folder_name, variable=var)
-                chk.pack(anchor='w')
-                self.folders.append((folder_path, var))
+                # Recursively search for mod_pv_db.txt using os.walk
+                for root, dirs, files in os.walk(folder_path):
+                    if 'mod_pv_db.txt' in files:
+                        # If found, create a checkbox
+                        var = tk.BooleanVar()
+                        chk = tk.Checkbutton(self.checkbox_frame, text=folder_name, variable=var)
+                        chk.pack(anchor='w')
+                        self.folders.append((folder_path, var))
+                        break  # No need to search further in this directory
 
     def process_mods(self):
         self.player_name = self.player_name_entry.get().strip()
