@@ -146,7 +146,7 @@ def extract_song_info(data):
     return flattened_packs, conflicts
 
 
-def process_song_file(input_file_path, output_file_path):
+def process_song_file(input_file_path):
     with open(input_file_path, 'r', encoding='utf-8', errors='ignore') as file:
         data = file.read()
 
@@ -157,9 +157,52 @@ def process_song_file(input_file_path, output_file_path):
         return
 
     if songs_info:
-        with open(output_file_path, 'w', encoding='utf-8', errors='ignore') as json_file:
-            json.dump(songs_info, json_file, indent=4, ensure_ascii=False)
-        print("JSON file generated successfully!")
-        messagebox.showinfo("Success", f"Json Data Created!")
-    else:
-        print("Failed to extract song information from the file.")
+        compressed_data = compress_song_data(songs_info)
+        return compressed_data
+
+
+def compress_song_data(json_data):
+    # Create a dictionary to map difficulties to list indices
+    difficulty_map = {
+        "[EASY]": 0,
+        "[NORMAL]": 1,
+        "[HARD]": 2,
+        "[EXTREME]": 3,
+        "[EXEXTREME]": 4
+    }
+
+    # Dictionary to hold the grouped song data
+    grouped_songs = {}
+
+    # Iterate through each pack in the JSON data
+    for pack in json_data:
+        pack_name = pack["packName"]
+
+        # Iterate through each song in the song list
+        for song in pack["songs"]:
+            song_id = song["songID"]
+            difficulty = song["difficulty"]
+            rating = float(song["difficultyRating"])
+
+            # If this is the first time we're seeing this song, initialize its entry
+            if song_id not in grouped_songs:
+                # Initialize with packName, songName, songID, and 5 zeros for difficulties
+                grouped_songs[song_id] = [pack_name, song["songName"], song_id] + [0] * 5
+
+            # Place the rating in the correct position based on the difficulty
+            grouped_songs[song_id][difficulty_map[difficulty] + 3] = rating
+
+    # Convert the dictionary to a string with comma-separated values
+    compressed_data = ""
+    for song_data in grouped_songs.values():
+        # Convert each rating to an integer if it's a whole number, otherwise keep it as a float
+        formatted_song_data = [
+            str(data) if not isinstance(data, float) or data % 1 != 0 else str(int(data))
+            for data in song_data
+        ]
+
+        # Join each song's data into a string surrounded by brackets and add to compressed_data
+        compressed_data += "[" + ",".join(formatted_song_data) + "]"
+    compressed_data = '"' + compressed_data + '"'
+
+    return compressed_data.strip()  # Remove the trailing newline

@@ -1,33 +1,28 @@
 import os
-import zipfile
-import shutil
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 from TextFilter import filter_important_lines
-
+import pyperclip  # For copying to clipboard
 
 class ModManagerApp:
     def __init__(self, master):
         self.master = master
         self.master.title("Diva Json Generator")
 
-        self.mods_folder = ""
-        self.player_name = ""
-
+        self.mods_folder = self.load_mods_folder()  # Load the mods folder from config
         self.folders = []
 
         self.button_frame = tk.Frame(self.master)
         self.button_frame.pack(pady=10)
 
-        # Label and Entry for entering player name
-        self.player_name_label = tk.Label(self.button_frame, text="Enter Player Name here:")
-        self.player_name_label.grid(row=0, column=0, padx=5, pady=5)
+        # Label for the current mods folder
+        self.current_folder_label = tk.Label(self.button_frame, text=f"Current Mods Folder: {self.mods_folder or 'Not selected'}")
+        self.current_folder_label.grid(row=0, column=0, columnspan=2, padx=5, pady=5)
 
-        self.player_name_entry = tk.Entry(self.button_frame)
-        self.player_name_entry.grid(row=0, column=1, padx=5, pady=5)
-
+        # Button for selecting mods folder
         self.select_mods_button = self.create_button("Select Mods Folder", self.select_folder, 1, 0)
+        self.select_mods_button.grid(row=1, column=0, sticky='w')  # Align left
 
         self.scrollable_frame = None
         self.canvas = None
@@ -35,10 +30,23 @@ class ModManagerApp:
 
         self.checkbox_frame = None
 
+        self.generated_text_box = tk.Text(self.master, height=10, width=50, wrap='word', state='disabled')
+        self.generated_text_box.pack_forget()  # Initially hidden
+
+        # Label above the copy button
+        self.paste_label = tk.Label(self.master, text="Paste to Mod Data section in your YAML")
+        self.copy_button = tk.Button(self.master, text="Copy to Clipboard", command=self.copy_to_clipboard)
+        self.copy_button.pack_forget()  # Initially hidden
+
         self.setup_scrollable_frame()
 
         self.process_button = tk.Button(self.master, text="Process Mods", command=self.process_mods)
-        self.process_button.pack_forget()
+        self.process_button.pack_forget()  # Initially hidden
+
+        # Check if a mods folder was loaded and populate the folder list if it exists
+        if self.mods_folder:
+            self.list_folders()  # Populate the folders if a folder was previously set
+            self.process_button.pack(pady=10)  # Show the process button
 
     def create_button(self, text, command, row, column):
         button = tk.Button(self.button_frame, text=text, command=command)
@@ -64,12 +72,24 @@ class ModManagerApp:
     def _on_mousewheel(self, event):
         self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
+    def load_mods_folder(self):
+        try:
+            with open('config.txt', 'r') as file:
+                return file.read().strip()  # Load folder from config
+        except FileNotFoundError:
+            return ""
+
+    def save_mods_folder(self, folder_path):
+        with open('config.txt', 'w') as file:
+            file.write(folder_path)  # Save the folder path to config
+
     def select_folder(self):
         self.mods_folder = filedialog.askdirectory()
         if self.mods_folder:
+            self.save_mods_folder(self.mods_folder)  # Save selected folder
+            self.current_folder_label.config(text=f"Current Mods Folder: {self.mods_folder}")  # Update label
             self.list_folders()
-            # Show the process button after selecting a mods folder
-            self.process_button.pack(pady=10)
+            self.process_button.pack(pady=10)  # Show the process button
 
     def list_folders(self):
         # Clear the checkbox frame first
@@ -95,11 +115,6 @@ class ModManagerApp:
                         break  # No need to search further in this directory
 
     def process_mods(self):
-        self.player_name = self.player_name_entry.get().strip()
-        if not self.player_name:
-            messagebox.showerror("Error", "Please enter a player name.")
-            return
-
         output_file_path = os.path.join(os.getcwd(), "combined_mod_pv_db.txt")
         with open(output_file_path, "w", encoding='utf-8', errors='ignore') as output_file:
             for folder_path, var in self.folders:
@@ -117,7 +132,21 @@ class ModManagerApp:
                                     messagebox.showerror("Error", f"Failed to read {file_path}: {e}")
 
         # Now pass the player name to the filter function
-        filter_important_lines("combined_mod_pv_db.txt", "filtered_file.txt", f"{self.player_name}")
+        self.display_generated_text(filter_important_lines("combined_mod_pv_db.txt", "filtered_file.txt"))
+
+    def display_generated_text(self, text):
+        self.generated_text_box.config(state='normal')
+        self.generated_text_box.delete(1.0, tk.END)  # Clear the box
+        self.generated_text_box.insert(tk.END, text)
+        self.generated_text_box.config(state='disabled')
+        self.generated_text_box.pack(pady=10)  # Show the text box
+        self.paste_label.pack(pady=10)  # Show the label
+        self.copy_button.pack(pady=10)  # Show the copy button
+
+    def copy_to_clipboard(self):
+        text = self.generated_text_box.get(1.0, tk.END).strip()  # Get text from the text box
+        pyperclip.copy(text)  # Copy text to clipboard
+        messagebox.showinfo("Copied", "Text copied to clipboard!")  # Notify user
 
 if __name__ == "__main__":
     master = tk.Tk()
