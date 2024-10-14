@@ -1,66 +1,7 @@
-import json
 import re
 from tkinter import messagebox
-from Translator import transliterate
+from SymbolFixer import fix_song_name
 
-
-def clean_text(text):
-    mapping = {
-        '＋': 'plus',
-        '♂': 'maleSign',
-        '♀': 'femaleSign',
-        '♠': 'spade',
-        '♣': 'club',
-        '♥': 'heart',
-        '♦': 'diamond',
-        '♪': 'musicalNote',
-        '♫': 'musicalNotes',
-        '☀': 'sun',
-        '☁': 'cloud',
-        '☂': 'umbrella',
-        '☃': 'snowman',
-        '☄': 'comet',
-        '★': 'star',
-        '☆': 'star',
-        '☎': 'telephone',
-        '☏': 'telephone',
-        '☑': 'checkBox',
-        '☒': 'checkBox',
-        '☞': 'pointingRight',
-        '☜': 'pointingLeft',
-        '☝': 'pointingUp',
-        '☟': 'pointingDown'
-        # Add more mappings for special characters here
-    }
-
-    special_characters = set(mapping.keys())
-
-    plain_text = []
-    word_buffer = ''
-
-    for char in text:
-        if char in special_characters:
-            if word_buffer:
-                plain_text.append(word_buffer)
-                word_buffer = ''
-            plain_text.append(mapping[char])
-        elif char.isalnum():
-            word_buffer += char
-        elif char.isspace():
-            if word_buffer:
-                plain_text.append(word_buffer)
-                word_buffer = ''
-            plain_text.append(' ')
-
-    # Add the last buffered word
-    if word_buffer:
-        plain_text.append(word_buffer)
-
-    return ''.join(plain_text)
-
-
-def replace_non_ascii_with_space(text):
-    return ''.join(char if ord(char) < 128 or char == '_' else ' ' for char in text)
 
 def extract_song_info(data):
     song_packs = {}
@@ -77,6 +18,7 @@ def extract_song_info(data):
             parts = line.split('=', 1)
             if len(parts) == 2:
                 current_pack = parts[1].strip()
+                current_pack = fix_song_name(current_pack)
                 if current_pack not in song_packs:
                     song_packs[current_pack] = []
 
@@ -103,9 +45,7 @@ def extract_song_info(data):
             parts = line.split('=', 1)
             if len(parts) == 2:
                 song_name = parts[1].strip()
-                cleaned_song_name = clean_text(song_name)
-                cleaned_song_name = transliterate(cleaned_song_name)
-                cleaned_song_name = replace_non_ascii_with_space(cleaned_song_name)
+                cleaned_song_name = fix_song_name(song_name)
                 current_song['songName'] = cleaned_song_name
                 current_name = cleaned_song_name
 
