@@ -18,7 +18,6 @@ def extract_song_info(data):
             parts = line.split('=', 1)
             if len(parts) == 2:
                 current_pack = parts[1].strip()
-                current_pack = fix_song_name(current_pack)
                 if current_pack not in song_packs:
                     song_packs[current_pack] = []
 
@@ -111,7 +110,7 @@ def compress_song_data(json_data):
         "[EXEXTREME]": 4
     }
 
-    # Dictionary to hold the grouped song data
+    # Initialize a dictionary to hold the grouped song data
     grouped_songs = {}
 
     # Iterate through each pack in the JSON data
@@ -132,17 +131,33 @@ def compress_song_data(json_data):
             # Place the rating in the correct position based on the difficulty
             grouped_songs[song_id][difficulty_map[difficulty] + 3] = rating
 
-    # Convert the dictionary to a string with comma-separated values
-    compressed_data = ""
+    # Initialize a dictionary to group songs by packName for output
+    grouped_packs = {}
+
+    # Group the songs by their pack names
     for song_data in grouped_songs.values():
-        # Convert each rating to an integer if it's a whole number, otherwise keep it as a float
-        formatted_song_data = [
-            str(data) if not isinstance(data, float) or data % 1 != 0 else str(int(data))
-            for data in song_data
-        ]
+        pack_name = song_data[0]
+        if pack_name not in grouped_packs:
+            grouped_packs[pack_name] = []
 
-        # Join each song's data into a string surrounded by brackets and add to compressed_data
-        compressed_data += "[" + ",".join(formatted_song_data) + "]"
-    compressed_data = '"' + compressed_data + '"'
+        # Append the song data without duplicating the pack name
+        grouped_packs[pack_name].append(song_data[1:])  # Skip the pack name in this list
 
-    return compressed_data.strip()  # Remove the trailing newline
+    # Convert the dictionary to a string with the desired format
+    output = []
+
+    for pack_name, songs in grouped_packs.items():
+        # Format the pack with the song details without a comma after the pack name
+        pack_data = [f"{pack_name}:"] + [f"[{', '.join(map(str, song))}]" for song in songs]
+
+        # Combine and format the pack
+        formatted_pack = "[" + ", ".join(pack_data[1:]) + "]"  # Only join songs without pack name
+        output.append(f"[{pack_data[0]}{formatted_pack}]")  # Add pack name without comma
+
+    # Join the result as a single string output
+    final_output = "".join(output)
+
+    return f'"{final_output.strip()}"'  # Surround the entire output with quotes and strip spaces
+
+
+

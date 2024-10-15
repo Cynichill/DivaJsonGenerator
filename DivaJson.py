@@ -5,6 +5,7 @@ from tkinter import ttk
 from TextFilter import filter_important_lines
 import pyperclip  # For copying to clipboard
 
+
 class ModManagerApp:
     def __init__(self, master):
         self.master = master
@@ -43,10 +44,23 @@ class ModManagerApp:
         self.process_button = tk.Button(self.master, text="Process Mods", command=self.process_mods)
         self.process_button.pack_forget()  # Initially hidden
 
+        # Right-side frame for the button and status label
+        self.right_frame = tk.Frame(self.master)
+        self.right_frame.pack(side='right', padx=20, pady=20, anchor='e')
+
+        # Fix Song Packs button
+        self.fix_button = tk.Button(self.right_frame, text="Fix Song Packs", command=self.fix_song_packs)
+        self.fix_button.pack(pady=10)
+
+        # Status label for showing messages (initially hidden)
+        self.status_label = tk.Label(self.right_frame, text="", fg="green")
+        self.status_label.pack(pady=10)
+
         # Check if a mods folder was loaded and populate the folder list if it exists
         if self.mods_folder:
             self.list_folders()  # Populate the folders if a folder was previously set
             self.process_button.pack(pady=10)  # Show the process button
+            self.fix_button.pack(pady=10)  # Show the fix button
 
     def create_button(self, text, command, row, column):
         button = tk.Button(self.button_frame, text=text, command=command)
@@ -147,6 +161,46 @@ class ModManagerApp:
         text = self.generated_text_box.get(1.0, tk.END).strip()  # Get text from the text box
         pyperclip.copy(text)  # Copy text to clipboard
         messagebox.showinfo("Copied", "Text copied to clipboard!")  # Notify user
+
+    def fix_song_packs(self):
+        any_fixed = False  # Track if any pack was fixed
+
+        for folder_path, var in self.folders:
+            if var.get():  # Only process checked folders
+                mod_copy_found = False
+                for root, dirs, files in os.walk(folder_path):
+                    if 'mod_pv_dbCOPY.txt' in files and 'mod_pv_db.txt' in files:
+                        copy_file_path = os.path.join(root, 'mod_pv_dbCOPY.txt')
+                        original_file_path = os.path.join(root, 'mod_pv_db.txt')
+
+                        try:
+                            # Read the contents of mod_pv_dbCOPY.txt
+                            with open(copy_file_path, 'r', encoding='utf-8', errors='ignore') as copy_file:
+                                copy_content = copy_file.read()
+
+                            # Overwrite mod_pv_db.txt with the contents from mod_pv_dbCOPY.txt
+                            with open(original_file_path, 'w', encoding='utf-8', errors='ignore') as original_file:
+                                original_file.write(copy_content)
+
+                            mod_copy_found = True
+                            any_fixed = True  # At least one mod pack was fixed
+                            break  # Stop searching further in this folder once the file is processed
+                        except Exception as e:
+                            # Display an error message in red on the status label
+                            self.status_label.config(text=f"Error fixing {original_file_path}: {e}", fg="red")
+                            mod_copy_found = True  # Stop further searching for this folder
+
+                if not mod_copy_found:
+                    # If no mod_pv_dbCOPY.txt was found, display a warning
+                    self.status_label.config(text=f"mod_pv_dbCOPY.txt not found in {folder_path}", fg="orange")
+
+        # If any packs were successfully fixed, show a success message
+        if any_fixed:
+            self.status_label.config(text="Selected packs fixed", fg="green")
+        else:
+            # If nothing was fixed, clear the status label
+            self.status_label.config(text="No packs were fixed.", fg="orange")
+
 
 if __name__ == "__main__":
     master = tk.Tk()

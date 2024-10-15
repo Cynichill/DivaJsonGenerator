@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="adc0007c-9147-4790-a6c5-c5ee7566df9d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DivaJson.py" beforeDir="false" afterPath="$PROJECT_DIR$/DivaJson.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TextFilter.py" beforeDir="false" afterPath="$PROJECT_DIR$/TextFilter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TxTToJSON.py" beforeDir="false" afterPath="$PROJECT_DIR$/TxTToJSON.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/combined_mod_pv_db.txt" beforeDir="false" afterPath="$PROJECT_DIR$/combined_mod_pv_db.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/filtered_file.txt" beforeDir="false" afterPath="$PROJECT_DIR$/filtered_file.txt" afterDir="false" />

@@ -1,6 +1,7 @@
 import re
 from TxTToJSON import process_song_file
 
+
 def filter_important_lines(input_file, output_file):
     song_pack_lines = {}
     current_song_pack = None
