@@ -3,7 +3,9 @@ from tkinter import messagebox
 from SymbolFixer import fix_song_name
 import json
 
+
 def extract_song_info(data):
+
     song_packs = {}
     current_song = None
     current_name = ""
@@ -86,8 +88,10 @@ def extract_song_info(data):
 
 
 def process_song_file(input_file_path):
+
     with open(input_file_path, 'r', encoding='utf-8', errors='ignore') as file:
         data = file.read()
+        print(data)
 
     songs_info, conflicts = extract_song_info(data)
 
