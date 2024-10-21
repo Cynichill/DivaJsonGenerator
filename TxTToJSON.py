@@ -1,7 +1,7 @@
 import re
 from tkinter import messagebox
 from SymbolFixer import fix_song_name
-
+import json
 
 def extract_song_info(data):
     song_packs = {}
@@ -121,12 +121,12 @@ def compress_song_data(json_data):
         for song in pack["songs"]:
             song_id = song["songID"]
             difficulty = song["difficulty"]
-            rating = float(song["difficultyRating"])
+            rating = int(song["difficultyRating"]) if float(song["difficultyRating"]).is_integer() else float(song["difficultyRating"])
 
             # If this is the first time we're seeing this song, initialize its entry
             if song_id not in grouped_songs:
                 # Initialize with packName, songName, songID, and 5 zeros for difficulties
-                grouped_songs[song_id] = [pack_name, song["songName"], song_id] + [0] * 5
+                grouped_songs[song_id] = [pack_name, f'"{song["songName"]}"', song_id] + [0] * 5
 
             # Place the rating in the correct position based on the difficulty
             grouped_songs[song_id][difficulty_map[difficulty] + 3] = rating
@@ -143,21 +143,47 @@ def compress_song_data(json_data):
         # Append the song data without duplicating the pack name
         grouped_packs[pack_name].append(song_data[1:])  # Skip the pack name in this list
 
-    # Convert the dictionary to a string with the desired format
-    output = []
+    # Initialize an empty dictionary to store the final output
+    song_packs = {}
 
     for pack_name, songs in grouped_packs.items():
-        # Format the pack with the song details without a comma after the pack name
-        pack_data = [f"{pack_name}:"] + [f"[{', '.join(map(str, song))}]" for song in songs]
+        # For each pack, use a list to represent the song data
+        song_list = []
 
-        # Combine and format the pack
-        formatted_pack = "[" + ", ".join(pack_data[1:]) + "]"  # Only join songs without pack name
-        output.append(f"[{pack_data[0]}{formatted_pack}]")  # Add pack name without comma
+        for song in songs:
+            # Strip any extra quotes from the song names
+            song_name = song[0].strip('"')
 
-    # Join the result as a single string output
-    final_output = "".join(output)
+            # Initialize a list for each song, starting with name and id
+            song_data = [song_name, int(song[1])]  # Store name and id as the first two elements
 
-    return f'"{final_output.strip()}"'  # Surround the entire output with quotes and strip spaces
+            # Only add non-zero difficulty levels with corresponding letter keys
+            if song[2] != 0:  # E (Easy)
+                song_data.append({"E": song[2]})  # Append Easy difficulty
+            if song[3] != 0:  # N (Normal)
+                song_data.append({"N": song[3]})  # Append Normal difficulty
+            if song[4] != 0:  # H (Hard)
+                song_data.append({"H": song[4]})  # Append Hard difficulty
+            if song[5] != 0:  # EX (Extreme)
+                song_data.append({"EX": song[5]})  # Append Extreme difficulty
+            if song[6] != 0:  # EXEX (ExExtreme)
+                song_data.append({"EXEX": song[6]})  # Append ExExtreme difficulty
+
+            # Add the song data to the song list
+            song_list.append(song_data)
+
+        # Assign the compressed song list to the pack name in the main dictionary
+        song_packs[pack_name] = song_list
+
+    # Convert the dictionary to a compressed JSON string (no indent, no extra spaces)
+    output_json = json.dumps(song_packs, separators=(',', ':'))
+
+    fix_json = output_json.replace("'", "/")
+
+    # Wrap in single quotes after
+    stringified_json = fix_json.replace('"', "'")
+
+    return f'"{stringified_json}"'  # Surround the entire output with quotes and strip spaces
 
 
 

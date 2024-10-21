@@ -18,7 +18,8 @@ class ModManagerApp:
         self.button_frame.pack(pady=10)
 
         # Label for the current mods folder
-        self.current_folder_label = tk.Label(self.button_frame, text=f"Current Mods Folder: {self.mods_folder or 'Not selected'}")
+        self.current_folder_label = tk.Label(self.button_frame,
+                                             text=f"Current Mods Folder: {self.mods_folder or 'Not selected'}")
         self.current_folder_label.grid(row=0, column=0, columnspan=2, padx=5, pady=5)
 
         # Button for selecting mods folder
@@ -89,7 +90,11 @@ class ModManagerApp:
     def load_mods_folder(self):
         try:
             with open('config.txt', 'r') as file:
-                return file.read().strip()  # Load folder from config
+                folder = file.read().strip()  # Load folder from config
+                if os.path.exists(folder) and os.path.isdir(folder):  # Check if it's a valid directory
+                    return folder
+                else:
+                    return ""  # Invalid path
         except FileNotFoundError:
             return ""
 
@@ -146,7 +151,8 @@ class ModManagerApp:
                                     messagebox.showerror("Error", f"Failed to read {file_path}: {e}")
 
         # Now pass the player name to the filter function
-        self.display_generated_text(filter_important_lines("combined_mod_pv_db.txt", "filtered_file.txt"))
+        self.display_generated_text(
+            filter_important_lines("combined_mod_pv_db.txt", "filtered_file.txt", self.mods_folder))
 
     def display_generated_text(self, text):
         self.generated_text_box.config(state='normal')
@@ -163,43 +169,35 @@ class ModManagerApp:
         messagebox.showinfo("Copied", "Text copied to clipboard!")  # Notify user
 
     def fix_song_packs(self):
-        any_fixed = False  # Track if any pack was fixed
 
         for folder_path, var in self.folders:
-            if var.get():  # Only process checked folders
-                mod_copy_found = False
-                for root, dirs, files in os.walk(folder_path):
-                    if 'mod_pv_dbCOPY.txt' in files and 'mod_pv_db.txt' in files:
-                        copy_file_path = os.path.join(root, 'mod_pv_dbCOPY.txt')
-                        original_file_path = os.path.join(root, 'mod_pv_db.txt')
+            mod_copy_found = False
+            for root, dirs, files in os.walk(folder_path):
+                if 'mod_pv_dbCOPY.txt' in files and 'mod_pv_db.txt' in files:
+                    copy_file_path = os.path.join(root, 'mod_pv_dbCOPY.txt')
+                    original_file_path = os.path.join(root, 'mod_pv_db.txt')
 
-                        try:
-                            # Read the contents of mod_pv_dbCOPY.txt
-                            with open(copy_file_path, 'r', encoding='utf-8', errors='ignore') as copy_file:
-                                copy_content = copy_file.read()
+                    try:
+                        # Read the contents of mod_pv_dbCOPY.txt
+                        with open(copy_file_path, 'r', encoding='utf-8', errors='ignore') as copy_file:
+                            copy_content = copy_file.read()
 
-                            # Overwrite mod_pv_db.txt with the contents from mod_pv_dbCOPY.txt
-                            with open(original_file_path, 'w', encoding='utf-8', errors='ignore') as original_file:
-                                original_file.write(copy_content)
+                        # Overwrite mod_pv_db.txt with the contents from mod_pv_dbCOPY.txt
+                        with open(original_file_path, 'w', encoding='utf-8', errors='ignore') as original_file:
+                            original_file.write(copy_content)
 
-                            mod_copy_found = True
-                            any_fixed = True  # At least one mod pack was fixed
-                            break  # Stop searching further in this folder once the file is processed
-                        except Exception as e:
-                            # Display an error message in red on the status label
-                            self.status_label.config(text=f"Error fixing {original_file_path}: {e}", fg="red")
-                            mod_copy_found = True  # Stop further searching for this folder
+                        mod_copy_found = True
+                        break  # Stop searching further in this folder once the file is processed
+                    except Exception as e:
+                        # Display an error message in red on the status label
+                        self.status_label.config(text=f"Error fixing {original_file_path}: {e}", fg="red")
+                        mod_copy_found = True  # Stop further searching for this folder
 
-                if not mod_copy_found:
-                    # If no mod_pv_dbCOPY.txt was found, display a warning
-                    self.status_label.config(text=f"mod_pv_dbCOPY.txt not found in {folder_path}", fg="orange")
+            if not mod_copy_found:
+                # If no mod_pv_dbCOPY.txt was found, display a warning
+                self.status_label.config(text=f"mod_pv_dbCOPY.txt not found in {folder_path}", fg="orange")
 
-        # If any packs were successfully fixed, show a success message
-        if any_fixed:
-            self.status_label.config(text="Selected packs fixed", fg="green")
-        else:
-            # If nothing was fixed, clear the status label
-            self.status_label.config(text="No packs were fixed.", fg="orange")
+        self.status_label.config(text="Song Packs fixed", fg="green")
 
 
 if __name__ == "__main__":
