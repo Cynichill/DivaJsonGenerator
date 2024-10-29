@@ -1,5 +1,5 @@
 import re
-from .Translator import transliterate
+from Translator import transliterate
 
 
 def unicode_to_plain_text(text):
