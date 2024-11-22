@@ -77,7 +77,7 @@ def replace_non_ascii_with_space(text):
 
 
 def special_char_removal(text):
-    # Remove apostrophes. Commas and quotation marks are not a concern.
+    # Escape apostrophes. Commas and quotation marks are not a concern.
     cleaned_text = text.replace("'", "''") #.replace(",", "").replace('"', "")
 
     # Replace multiple spaces with a single space
