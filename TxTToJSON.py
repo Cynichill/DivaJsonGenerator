@@ -181,7 +181,7 @@ def compress_song_data(json_data):
 
     # Convert the dictionary to a compressed JSON string (no indent, no extra spaces)
     output_json = json.dumps(song_packs, separators=(',', ':'))
-    output_json = output_json.replace("'", "/")
+    output_json = output_json.replace("'", "''") # Escape ' for YAML entry
     #output_json = output_json.replace('"', "'")
 
     return f"'{output_json}'"  # Surround the entire output with quotes and strip spaces
