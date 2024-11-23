@@ -187,4 +187,4 @@ def optimize_diffs(diffs):
             pri = int(diff) | 1 << 4
             val = (val << 5) | pri
 
-    return hex(val)[2:]
+    return val
