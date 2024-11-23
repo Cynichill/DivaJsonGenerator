@@ -159,7 +159,7 @@ def compress_song_data(json_data):
             song_name = song[0].strip('"')
 
             # Initialize a list for each song, starting with name and id
-            song_data = [song_name, int(song[1]), optimize_diffs(song[2:6])]
+            song_data = [song_name, int(song[1]), optimize_diffs(song[2:7])]
 
             # Add the song data to the song list
             song_list.append(song_data)
