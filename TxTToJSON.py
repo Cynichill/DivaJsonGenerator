@@ -181,10 +181,9 @@ def optimize_diffs(diffs):
     val = 0
 
     for diff in diffs:
-        if isinstance(diff, int):
-            val = (val << 5) | diff
-        else:
-            pri = int(diff) | 1 << 4
-            val = (val << 5) | pri
+        if not isinstance(diff, int):
+            diff = int(diff) | 1 << 4
+
+        val = (val << 5) | diff
 
     return val
