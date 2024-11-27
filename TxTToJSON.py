@@ -159,19 +159,7 @@ def compress_song_data(json_data):
             song_name = song[0].strip('"')
 
             # Initialize a list for each song, starting with name and id
-            song_data = [song_name, int(song[1])]  # Store name and id as the first two elements
-
-            # Only add non-zero difficulty levels with corresponding letter keys
-            if song[2] != 0:  # E (Easy)
-                song_data.append({"E": song[2]})  # Append Easy difficulty
-            if song[3] != 0:  # N (Normal)
-                song_data.append({"N": song[3]})  # Append Normal difficulty
-            if song[4] != 0:  # H (Hard)
-                song_data.append({"H": song[4]})  # Append Hard difficulty
-            if song[5] != 0:  # EX (Extreme)
-                song_data.append({"EX": song[5]})  # Append Extreme difficulty
-            if song[6] != 0:  # EXEX (ExExtreme)
-                song_data.append({"EXEX": song[6]})  # Append ExExtreme difficulty
+            song_data = [song_name, int(song[1]), optimize_diffs(song[2:7])]
 
             # Add the song data to the song list
             song_list.append(song_data)
@@ -186,5 +174,13 @@ def compress_song_data(json_data):
 
     return f"'{output_json}'"  # Surround the entire output with quotes and strip spaces
 
+def optimize_diffs(diffs):
+    val = 0
 
+    for diff in diffs:
+        if not isinstance(diff, int):
+            diff = int(diff) | 1 << 4
 
+        val = (val << 5) | diff
+
+    return val
