@@ -130,7 +130,7 @@ def compress_song_data(json_data):
             # If this is the first time we're seeing this song, initialize its entry
             if song_id not in grouped_songs:
                 # Initialize with packName, songName, songID, and 5 zeros for difficulties
-                grouped_songs[song_id] = [pack_name, f'"{song["songName"]}"', song_id] + [0] * 5
+                grouped_songs[song_id] = [pack_name, song["songName"], song_id] + [0] * 5
 
             # Place the rating in the correct position based on the difficulty
             grouped_songs[song_id][difficulty_map[difficulty] + 3] = rating
@@ -155,11 +155,8 @@ def compress_song_data(json_data):
         song_list = []
 
         for song in songs:
-            # Strip any extra quotes from the song names
-            song_name = song[0].strip('"')
-
             # Initialize a list for each song, starting with name and id
-            song_data = [song_name, int(song[1]), optimize_diffs(song[2:7])]
+            song_data = [song[0], int(song[1]), optimize_diffs(song[2:7])]
 
             # Add the song data to the song list
             song_list.append(song_data)
